@@ -1,50 +1,59 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+pipeline {
+    agent any
 
-    <groupId>com.example</groupId>
-    <artifactId>my-web-app</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>war</packaging>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-
-    <dependencies>
-        <!-- Add your dependencies here -->
-        <!-- Example: Servlet API -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
-                <configuration>
-                    <!-- Configure the war plugin as needed -->
-                    <warSourceDirectory>src/main/webapp</warSourceDirectory>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+    stages {
+        stage('Java') {
+            steps {
+                script {
+                    tool name: 'JAVA11', type: 'jdk'
+                    sh 'java -version'
+                }
+            }
+        }
+        stage('maven') {
+            steps {
+                script {
+                    tool name: 'maven', type: 'maven'
+                    sh 'mvn -v'
+                }
+            }
+        }
+        stage('mvn clean') {
+            steps {
+                script {
+                    tool name: 'maven', type: 'maven'
+                    sh 'mvn clean'
+                }
+            }
+        }
+        stage('mvn compile') {
+            steps {
+                script {
+                    tool name: 'maven', type: 'maven'
+                    sh 'mvn compile'
+                }
+            }
+        }
+        stage('mvn test') {
+            steps {
+                script {
+                    tool name: 'maven', type: 'maven'
+                    sh 'mvn test'
+                }
+            }
+        }
+        stage('mvn package') {
+            steps {
+                script {
+                    tool name: 'maven', type: 'maven'
+                    sh 'mvn package'
+                }
+            }
+        }
+        stage('Tomcatdeploy') {
+            steps {
+                deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: 'http://54.227.25.21:8085/')], contextPath: 'app', war: '**/*.war'
+            }
+        }
+    }
+}
